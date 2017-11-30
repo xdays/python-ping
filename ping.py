@@ -194,6 +194,24 @@ def do_one(dest_addr, timeout):
     my_socket.close()
     return delay
 
+def send_multi_ping(dest_addr, timeout, count):
+    """
+    Send >count< ping to >dest_addr< with the given >timeout< and resturn
+    summary result.
+    """
+    success_count = 0
+    delay_list = []
+    for i in xrange(count):
+        try:
+            delay = do_one(dest_addr, timeout) or 0
+        except socket.gaierror, e:
+            continue
+        if delay > 0:
+            success_count += 1
+        delay_list.append(delay*1000)
+    average_delay = round(reduce(lambda x, y: x + y, delay_list)/len(delay_list), 2)
+    success_rate = int(100*float(success_count)/count)
+    return {'delay': average_delay, 'rate': success_rate}
 
 def verbose_ping(dest_addr, timeout = 2, count = 4):
     """
